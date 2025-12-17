@@ -4,7 +4,7 @@ Application web interactive de quiz sur la réglementation CTS (Chapiteaux, Tent
 
 ## 🚀 Démo en Ligne
 
-**Accédez à l'application** : [https://fi-regie.github.io/Quiz-CTS-Pro/](https://fi-regie.github.io/Quiz-CTS-Pro/)
+**Accédez à l'application** : [https://fi-regie.github.io/Quiz-CTS/](https://fi-regie.github.io/Quiz-CTS/)
 
 ## 📋 Présentation
 
@@ -58,7 +58,7 @@ Quiz CTS Pro est une application web interactive conçue pour tester et amélior
 ## 🛠️ Installation et Utilisation
 
 ### Option 1 : Utilisation en Ligne (Recommandé)
-1. **Accédez à** : [https://fi-regie.github.io/Quiz-CTS-Pro/](https://fi-regie.github.io/Quiz-CTS-Pro/)
+1. **Accédez à** : [https://fi-regie.github.io/Quiz-CTS/](https://fi-regie.github.io/Quiz-CTS)
 2. **Configurez** votre quiz (niveau, thèmes, nombre de questions)
 3. **Commencez** l'entraînement
 
@@ -80,7 +80,7 @@ Quiz-CTS-Pro/
 ```
 
 ### Option 3 : Dépôt GitHub
-1. **Visitez** : [https://github.com/fi-regie/Quiz-CTS-Pro](https://github.com/fi-regie/Quiz-CTS-Pro)
+1. **Visitez** : [https://github.com/fi-regie/Quiz-CTS](https://github.com/fi-regie/Quiz-CTS)
 2. **Clonez** ou **téléchargez** le dépôt
 3. **Exécutez** localement
 
@@ -296,7 +296,7 @@ Ce projet est distribué sous licence libre. Voir le fichier `LICENSE` pour plus
 ## 📞 Support et Contact
 
 ### Pour les Questions Techniques
-- **Dépôt GitHub** : [https://github.com/fi-regie/Quiz-CTS-Pro](https://github.com/fi-regie/Quiz-CTS-Pro)
+- **Dépôt GitHub** : [https://github.com/fi-regie/Quiz-CTS-Pro](https://github.com/fi-regie/Quiz-CTS)
 - **Issues** : Signalez les bugs et suggestions
 - **Pull Requests** : Proposez des améliorations
 
