@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz CTS Pro - Réglementation Chapiteaux, Tentes et Structures</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <h1>Quiz CTS Pro</h1>
+        </div>
+        <div class="header-right">
+            <div id="timer">00:00</div>
+        </div>
+    </header>
+
+    <!-- ÉCRAN DE CONFIGURATION -->
+    <div class="config-screen" id="configScreen">
+        <h2 class="config-title">🚀 Configuration du Quiz CTS</h2>
+        
+        <!-- SECTION 1 : Nombre de questions -->
+        <div class="config-section">
+            <div class="section-title">📊 Nombre de questions</div>
+            <div class="question-selector">
+                <div class="question-option" data-questions="10">10 questions</div>
+                <div class="question-option" data-questions="20">20 questions</div>
+                <div class="question-option selected" data-questions="30">30 questions</div>
+                <div class="question-option" data-questions="40">40 questions</div>
+            </div>
+        </div>
+
+        <!-- SECTION 2 : Niveau de difficulté -->
+        <div class="config-section">
+            <div class="section-title">🎯 Niveau de difficulté</div>
+            <div class="level-selector">
+                <div class="level-option student" data-level="student">
+                    <div class="level-title">Étudiant</div>
+                    <div class="level-desc">Bases de la réglementation</div>
+                    <div class="level-desc">Questions fondamentales</div>
+                </div>
+                <div class="level-option pro selected" data-level="pro">
+                    <div class="level-title">Professionnel</div>
+                    <div class="level-desc">Connaissances approfondies</div>
+                    <div class="level-desc">Cas pratiques</div>
+                </div>
+                <div class="level-option expert" data-level="expert">
+                    <div class="level-title">Expert</div>
+                    <div class="level-desc">Maîtrise complète</div>
+                    <div class="level-desc">Situations complexes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3 : Thèmes -->
+        <div class="config-section">
+            <div class="section-title">📚 Thèmes du quiz</div>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">
+                Sélectionnez un ou plusieurs thèmes (tous sélectionnés par défaut)
+            </p>
+            <div class="theme-selector">
+                <div class="theme-option selected" data-theme="general">
+                    <div class="theme-icon">🏗️</div>
+                    <div>Généralités</div>
+                </div>
+                <div class="theme-option selected" data-theme="construction">
+                    <div class="theme-icon">🔨</div>
+                    <div>Construction</div>
+                </div>
+                <div class="theme-option selected" data-theme="electricity">
+                    <div class="theme-icon">⚡</div>
+                    <div>Électricité</div>
+                </div>
+                <div class="theme-option selected" data-theme="safety">
+                    <div class="theme-icon">🚨</div>
+                    <div>Sécurité</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="start-btn" id="startBtn" onclick="startQuiz()">
+            🚀 Démarrer le quiz
+        </button>
+    </div>
+
+    <!-- ÉCRAN DU QUIZ -->
+    <div class="app-container" id="quizContainer">
+        <!-- STATISTIQUES -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="currentQuestion">1/30</div>
+                <div class="stat-label">Question</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="correctAnswers">0</div>
+                <div class="stat-label">Réponses correctes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="scorePercentage">0%</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="questionsLeft">30</div>
+                <div class="stat-label">Questions restantes</div>
+            </div>
+        </div>
+
+        <!-- BARRE DE PROGRESSION -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="progress-text">
+                <span>Début</span>
+                <span id="progressText">0%</span>
+                <span>Fin</span>
+            </div>
+        </div>
+
+        <!-- CONTENU DES QUESTIONS -->
+        <div id="quizContent"></div>
+
+        <!-- CONTROLES -->
+        <div class="controls">
+            <button class="control-btn prev-btn" onclick="previousQuestion()" disabled>
+                ← Question précédente
+            </button>
+            
+            <div class="action-buttons">
+                <button class="action-btn hint-btn" onclick="showHint()">
+                    💡 Aide
+                </button>
+                <button class="action-btn visual-btn" onclick="showVisualAid()">
+                    📐 Schéma
+                </button>
+                <button class="action-btn show-answer-btn" onclick="showAnswer()">
+                    ✅ Voir réponse
+                </button>
+            </div>
+            
+            <button class="control-btn next-btn" onclick="nextQuestion()">
+                Question suivante →
+            </button>
+        </div>
+    </div>
+
+    <!-- ÉCRAN DES RÉSULTATS -->
+    <div class="results-screen" id="resultsScreen">
+        <h2 class="results-header">🎉 Résultats du Quiz</h2>
+        
+        <div class="score-display">
+            <div class="score-value" id="finalScore">0%</div>
+            <div class="score-label">Score final</div>
+        </div>
+
+        <div class="results-grid">
+            <div class="result-card">
+                <div class="result-value" id="totalCorrect">0</div>
+                <div class="result-label">Réponses correctes</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value" id="totalIncorrect">0</div>
+                <div class="result-label">Réponses incorrectes</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value" id="totalQuestions">30</div>
+                <div class="result-label">Questions totales</div>
+            </div>
+            <div class="result-card">
+                <div class="result-value" id="totalTime">00:00</div>
+                <div class="result-label">Temps total</div>
+            </div>
+        </div>
+
+        <div class="evaluation">
+            <h3>📊 Analyse de performance</h3>
+            <p id="evaluationText">Chargement de l'analyse...</p>
+            
+            <h3>💡 Plan d'amélioration</h3>
+            <ul class="advice-list" id="adviceList">
+                <!-- Conseils générés dynamiquement -->
+            </ul>
+        </div>
+
+        <button class="restart-btn" onclick="restartQuiz()">
+            🔄 Nouveau quiz
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
