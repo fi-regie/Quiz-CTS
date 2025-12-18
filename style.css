@@ -115,9 +115,9 @@ h1 {
 }
 
 .question-option.selected {
-    border-color: var(--primary-color);
-    background: var(--primary-color);
-    color: white;
+    border-color: #dee2e6;
+    background: #dee2e6;
+    color: black;
 }
 
 /* NIVEAUX */
@@ -206,9 +206,9 @@ h1 {
 }
 
 .theme-option.selected {
-    border-color: var(--primary-color);
-    background: var(--primary-color);
-    color: white;
+    border-color: #dee2e6;
+    background: #dee2e6;
+    color: black;
 }
 
 .theme-icon {
@@ -218,8 +218,8 @@ h1 {
 
 /* BOUTON START */
 .start-btn {
-    background: var(--primary-color);
-    color: white;
+    background: #dee2e6;
+    color: black;
     border: none;
     padding: 15px 40px;
     border-radius: 4px;
