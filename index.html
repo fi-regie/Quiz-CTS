@@ -1,193 +1,2141 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz CTS - Réglementation Chapiteaux, Tentes et Structures</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Quiz CTS Pro - Réglementation Chapiteaux, Tentes et Structures</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome pour icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Palette "Architectural Safety" -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Palette du modèle
+                        'stone': {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        },
+                        'orange': {
+                            600: '#ea580c',
+                        },
+                        'emerald': {
+                            600: '#059669',
+                        },
+                        'slate': {
+                            700: '#334155',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animation for fade in */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Professional Chart Containers */
+        .chart-container-professional {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+            height: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tab transitions */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* Quiz specific styles */
+        .quiz-option {
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-option.selected {
+            border-color: #059669;
+            background-color: #f0fdf4;
+        }
+
+        .quiz-option.correct {
+            border-color: #059669;
+            background-color: #f0fdf4;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+    </style>
 </head>
-<body>
-    <header class="app-header">
-        <div class="header-left">
-            <h1>Quiz CTS Pro</h1>
-        </div>
-        <div class="header-right">
-            <div id="timer">00:00</div>
-        </div>
-    </header>
 
-    <!-- ÉCRAN DE CONFIGURATION -->
-    <div class="config-screen" id="configScreen">
-        <h2 class="config-title">🚀 Configuration du Quiz CTS</h2>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-orange-200 selection:text-orange-900">
+
+    <!-- Navigation / Header -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2"></span>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-700"> Quiz CTS Pro
+                        <span class="text-orange-600 text-sm font-normal uppercase ml-2 tracking-widest">Chapiteaux, Tentes et Structures</span></h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2">
+                        <span class="text-sm text-stone-500">Temps écoulé :</span>
+                        <div class="bg-stone-100 px-3 py-1 rounded-lg font-mono font-bold text-slate-700" id="globalTimer">00:00</div>
+                    </div>
+                    <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" title="Application active"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Navigation professionnelle -->
+    <div class="bg-white border-b border-stone-200">
+        <div class="max-w-8xl mx-auto">
+            <nav class="flex overflow-x-auto no-scrollbar px-4">
+                <button onclick="switchTab('config')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-config">
+                    <i class="fas fa-cog mr-2"></i>Configuration
+                </button>
+                <button onclick="switchTab('quiz')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-quiz">
+                    <i class="fas fa-graduation-cap mr-2"></i>Quiz
+                </button>
+                <button onclick="switchTab('cas_reels')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-cas_reels">
+                    <i class="fas fa-balance-scale mr-2"></i>Études de Cas
+                </button>
+                <button onclick="switchTab('classification')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-classification">
+                    <i class="fas fa-calculator mr-2"></i>Classification
+                </button>
+                <button onclick="switchTab('degagements')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-degagements">
+                    <i class="fas fa-door-open mr-2"></i>Dégagements
+                </button>
+                <button onclick="switchTab('materiaux')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-materiaux">
+                    <i class="fas fa-fire-extinguisher mr-2"></i>Matériaux
+                </button>
+                <button onclick="switchTab('secours')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-orange-600 hover:text-orange-600 whitespace-nowrap flex items-center"
+                    id="btn-secours">
+                    <i class="fas fa-people-carry mr-2"></i>Secours
+                </button>
+                <button onclick="switchTab('resultats')"
+                    class="nav-btn px-4 py-3 border-b-2 border-transparent hover:border-emerald-600 hover:text-emerald-600 whitespace-nowrap flex items-center"
+                    id="btn-resultats">
+                    <i class="fas fa-chart-line mr-2"></i>Résultats
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ONGLET 1 : CONFIGURATION -->
+        <div id="config" class="tab-content active">
+            <div class="max-w-6xl mx-auto">
+                <!-- Introduction -->
+                <div class="bg-white rounded-xl shadow-sm border border-stone-100 p-6 md:p-8 mb-8">
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-700">🚀 Configuration du Quiz CTS Pro</h2>
+                    <p class="text-stone-600 leading-relaxed mb-6">
+                        Personnalisez votre session d'entraînement selon vos besoins. Ce quiz interactif vous permet de tester vos connaissances sur la réglementation des Chapiteaux, Tentes et Structures (CTS) de manière progressive et pédagogique.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-orange-500">
+                            <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Objectif 1</span>
+                            <span class="font-medium">Valider vos connaissances CTS</span>
+                        </div>
+                        <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-slate-600">
+                            <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Objectif 2</span>
+                            <span class="font-medium">Identifier vos points d'amélioration</span>
+                        </div>
+                        <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-emerald-500">
+                            <span class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Objectif 3</span>
+                            <span class="font-medium">Obtenir une certification professionnelle</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- SECTION 1 : Nombre de questions -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="fas fa-list-ol text-orange-600 mr-3"></i>
+                            Nombre de questions
+                        </h3>
+                        <p class="text-sm text-stone-500 mb-4">Choisissez la durée de votre session</p>
+                        <div class="space-y-3" id="questionCountOptions">
+                            <!-- Les options seront générées dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2 : Niveau de difficulté -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="fas fa-trophy text-orange-600 mr-3"></i>
+                            Niveau de difficulté
+                        </h3>
+                        <p class="text-sm text-stone-500 mb-4">Adaptez la complexité des questions</p>
+                        <div class="space-y-3" id="levelOptions">
+                            <!-- Les options seront générées dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3 : Thèmes du quiz -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="fas fa-book-open text-orange-600 mr-3"></i>
+                            Thèmes du quiz
+                        </h3>
+                        <p class="text-sm text-stone-500 mb-4">Sélectionnez les domaines à tester</p>
+                        <div class="space-y-3" id="themeOptions">
+                            <!-- Les options seront générées dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Résumé de configuration -->
+                <div class="mt-8 bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-500">
+                    <h4 class="text-lg font-bold text-emerald-800 mb-3 flex items-center">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        Résumé de votre configuration
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="configSummary">
+                        <div>
+                            <div class="font-bold text-stone-700">Questions :</div>
+                            <div class="text-emerald-700 font-medium" id="summaryQuestions">20</div>
+                        </div>
+                        <div>
+                            <div class="font-bold text-stone-700">Niveau :</div>
+                            <div class="text-emerald-700 font-medium" id="summaryLevel">Professionnel</div>
+                        </div>
+                        <div>
+                            <div class="font-bold text-stone-700">Thèmes :</div>
+                            <div class="text-emerald-700 font-medium" id="summaryThemes">4 sélectionnés</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton de démarrage -->
+                <div class="mt-12 text-center">
+                    <button onclick="startQuiz()"
+                            class="bg-gradient-to-r from-orange-600 to-orange-700 text-white font-bold py-4 px-12 rounded-lg hover:from-orange-700 hover:to-orange-800 transition text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fas fa-rocket mr-3"></i>
+                        🚀 Démarrer le quiz
+                    </button>
+                    <p class="text-sm text-stone-500 mt-4">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Temps estimé : <span id="estimatedTime" class="font-bold">10-15 minutes</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 2 : QUIZ -->
+        <div id="quiz" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <!-- Barre de progression et statistiques -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="text-center p-4 bg-stone-50 rounded-lg border border-stone-200">
+                            <div class="text-2xl font-bold text-slate-800" id="currentQuestion">1/20</div>
+                            <div class="text-sm text-stone-600">Question</div>
+                        </div>
+                        <div class="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                            <div class="text-2xl font-bold text-emerald-800" id="correctAnswers">0</div>
+                            <div class="text-sm text-emerald-700">Correctes</div>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="text-2xl font-bold text-blue-800" id="scorePercentage">0%</div>
+                            <div class="text-sm text-blue-700">Score</div>
+                        </div>
+                        <div class="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                            <div class="text-2xl font-bold text-orange-800" id="questionsLeft">20</div>
+                            <div class="text-sm text-orange-700">Restantes</div>
+                        </div>
+                    </div>
+
+                    <!-- Barre de progression détaillée -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm text-stone-600 mb-2">
+                            <span>Progression</span>
+                            <span id="progressText">0%</span>
+                        </div>
+                        <div class="h-3 bg-stone-200 rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question actuelle -->
+                <div class="bg-white rounded-xl shadow-sm p-8 mb-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <div class="inline-block px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-bold mb-3" id="questionTheme">SÉCURITÉ</div>
+                            <h3 class="text-2xl font-bold text-slate-800" id="questionText">Chargement de la question...</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-stone-500 mb-1">Difficulté</div>
+                            <div class="flex space-x-1">
+                                <div class="w-3 h-3 rounded-full bg-stone-300"></div>
+                                <div class="w-3 h-3 rounded-full bg-stone-300"></div>
+                                <div class="w-3 h-3 rounded-full bg-stone-300"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Options de réponse -->
+                    <div class="space-y-4 mb-8" id="quizOptions">
+                        <!-- Les options seront injectées par JavaScript -->
+                    </div>
+
+                    <!-- Indices et aides -->
+                    <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500 mb-6 hidden" id="hintContainer">
+                        <div class="flex items-start">
+                            <i class="fas fa-lightbulb text-blue-600 text-xl mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-blue-800 mb-1">Indice pédagogique</h4>
+                                <p class="text-blue-700" id="hintText"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback de réponse -->
+                    <div class="mb-6 hidden" id="feedbackContainer">
+                        <!-- Le feedback sera injecté par JavaScript -->
+                    </div>
+
+                    <!-- Étude de cas liée -->
+                    <div class="bg-stone-50 rounded-lg p-4 border-l-4 border-slate-600 hidden" id="caseStudyContainer">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+                            <i class="fas fa-balance-scale mr-2"></i>
+                            Étude de Cas Liée
+                        </h4>
+                        <div id="caseStudyContent"></div>
+                    </div>
+
+                    <!-- Références légales -->
+                    <div class="bg-stone-50 rounded-lg p-4 hidden" id="referenceContainer">
+                        <h4 class="font-bold text-stone-800 mb-2 flex items-center">
+                            <i class="fas fa-book mr-2"></i>
+                            Référence légale
+                        </h4>
+                        <p class="text-sm text-stone-600" id="referenceText"></p>
+                        <a href="#" target="_blank" class="text-sm text-blue-600 hover:underline inline-block mt-2" id="referenceLink">
+                            <i class="fas fa-external-link-alt mr-1"></i>
+                            Consulter le texte
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Contrôles de navigation -->
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="flex space-x-4">
+                        <button onclick="showHint()"
+                                class="flex items-center px-5 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
+                            <i class="fas fa-lightbulb mr-2"></i>
+                            Afficher un indice
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="previousQuestion()"
+                                class="flex items-center px-6 py-3 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                id="prevBtn" disabled>
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Précédent
+                        </button>
+                        <button onclick="nextQuestionOrFinish()"
+                                class="flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                                id="nextBtn">
+                            Suivant
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 3 : ÉTUDES DE CAS RÉELS -->
+        <div id="cas_reels" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">Études de Cas Réels - CTS</h2>
+                    <p class="text-stone-600 mb-6">
+                        Analysez des situations réelles issues de jurisprudence. Ces cas concrets illustrent les conséquences des non-conformités et renforcent votre compréhension opérationnelle.
+                    </p>
+                </div>
+
+                <!-- Cas réels - Contenu dynamique -->
+                <div id="caseStudiesContent">
+                    <!-- Les études de cas seront chargées dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 4 : CLASSIFICATION & RESPONSABILITÉ -->
+        <div id="classification" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">Classification CTS & Responsabilité</h2>
+                    <p class="text-stone-600 mb-6">
+                        La classification des CTS détermine les obligations réglementaires spécifiques.
+                        En tant que responsable, votre vigilance conditionne la sécurité des personnes.
+                    </p>
+                </div>
+
+                <!-- Contenu dynamique -->
+                <div id="classificationContent">
+                    <!-- Le contenu sera chargé dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 5 : DÉGAGEMENTS -->
+        <div id="degagements" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">Dégagements CTS : La Vie en Jeu</h2>
+                    <p class="text-stone-600 mb-6">
+                        Les dégagements dans les CTS présentent des particularités liées à la nature temporaire et textile des structures.
+                    </p>
+                </div>
+
+                <!-- Contenu dynamique -->
+                <div id="degagementsContent">
+                    <!-- Le contenu sera chargé dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 6 : MATÉRIAUX -->
+        <div id="materiaux" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">Matériaux CTS : L'Expertise Technique</h2>
+                    <p class="text-stone-600 mb-6">
+                        Les matériaux utilisés dans les CTS doivent répondre à des exigences particulières de réaction au feu.
+                    </p>
+                </div>
+
+                <!-- Contenu dynamique -->
+                <div id="materiauxContent">
+                    <!-- Le contenu sera chargé dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 7 : SECOURS -->
+        <div id="secours" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">Organisation des Secours en CTS</h2>
+                    <p class="text-stone-600 mb-6">
+                        L'organisation des secours dans les CTS nécessite une adaptation aux contraintes spécifiques des structures démontables.
+                    </p>
+                </div>
+
+                <!-- Contenu dynamique -->
+                <div id="secoursContent">
+                    <!-- Le contenu sera chargé dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 8 : RÉSULTATS -->
+        <div id="resultats" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <!-- Sceau de validation -->
+                <div class="bg-white rounded-xl shadow-sm p-8 mb-8 text-center border border-stone-200">
+                    <i class="fas fa-award text-6xl text-emerald-600 mb-4"></i>
+                    <h2 class="text-3xl font-bold mb-4 text-slate-800">Résultats du Quiz CTS</h2>
+                    <p class="text-lg text-stone-600">
+                        Analyse détaillée de vos performances et recommandations personnalisées.
+                    </p>
+                </div>
+
+                <!-- Score et statistiques -->
+                <div id="resultsContainer" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                            <div class="text-4xl font-bold text-emerald-600" id="finalScorePercentage">0%</div>
+                            <div class="text-sm text-stone-600">Score final</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                            <div class="text-4xl font-bold text-emerald-600" id="totalCorrectAnswers">0</div>
+                            <div class="text-sm text-stone-600">Réponses correctes</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                            <div class="text-4xl font-bold text-stone-600" id="totalTimeTaken">00:00</div>
+                            <div class="text-sm text-stone-600">Temps total</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                            <div class="text-4xl font-bold text-orange-600" id="averageTime">0s</div>
+                            <div class="text-sm text-stone-600">Temps moyen/question</div>
+                        </div>
+                    </div>
+
+                    <!-- Graphique de performance -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                        <h3 class="text-xl font-bold mb-4">Analyse par thème</h3>
+                        <div class="chart-container-professional">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recommandations -->
+                    <div class="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-500 mb-8">
+                        <h4 class="text-2xl font-bold mb-4">Plan d'amélioration</h4>
+                        <ul class="space-y-3" id="adviceList">
+                            <!-- Les conseils seront injectés par JavaScript -->
+                        </ul>
+                    </div>
+
+                    <!-- Certificat -->
+                    <div class="bg-gradient-to-r from-slate-800 to-slate-700 text-white rounded-xl p-8 shadow-sm mb-8">
+                        <div class="text-center">
+                            <i class="fas fa-certificate text-5xl text-emerald-300 mb-4"></i>
+                            <h3 class="text-2xl font-bold mb-6">Certificat de Formation</h3>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto">
+                                <p class="mb-4">Atteste que</p>
+                                <div class="text-3xl font-bold mb-6 border-b border-white/30 pb-4" contenteditable="true" id="certificateName">[VOTRE NOM]</div>
+                                <p class="mb-2">a suivi avec succès la formation</p>
+                                <p class="text-xl font-bold mb-6">"Quiz CTS Pro - Réglementation Chapiteaux, Tentes et Structures"</p>
+                                <div class="grid grid-cols-2 gap-6 text-sm">
+                                    <div>
+                                        <div class="font-bold text-emerald-300">Score obtenu</div>
+                                        <div id="certificateScore">0%</div>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-emerald-300">Date</div>
+                                        <div id="certificateDate"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <button onclick="downloadCertificate()"
+                                class="bg-emerald-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-emerald-700 transition flex items-center justify-center">
+                            <i class="fas fa-download mr-2"></i>
+                            Télécharger le certificat
+                        </button>
+                        <button onclick="restartQuiz()"
+                                class="bg-slate-800 text-white font-bold py-3 px-8 rounded-lg hover:bg-slate-900 transition flex items-center justify-center">
+                            <i class="fas fa-redo mr-2"></i>
+                            Nouveau quiz
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Message si pas encore de quiz -->
+                <div id="noResultsMessage" class="text-center py-12">
+                    <i class="fas fa-clipboard-list text-5xl text-stone-400 mb-4"></i>
+                    <h4 class="text-xl font-bold text-stone-600">Aucun résultat disponible</h4>
+                    <p class="text-stone-500">Commencez un quiz pour voir vos résultats ici</p>
+                    <button onclick="switchTab('config')"
+                            class="mt-6 bg-orange-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-700 transition">
+                        <i class="fas fa-cog mr-2"></i>
+                        Configurer un quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="bg-[#f8f9fa] text-[#495057] py-8 mt-12 border-t border-[#dee2e6]">
+        <div class="max-w-8xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 text-[#343a40]">Quiz CTS Pro</h4>
+                    <p class="text-[#6c757d] text-sm mb-2">
+                        Outil pédagogique open source destiné à la formation des responsables CTS.
+                    </p>
+                    <p class="text-[#6c757d] text-sm">
+                        <small>Mise à jour : 19 décembre 2025</small>
+                    </p>
+                </div>
+
+                <!-- Deuxième colonne avec bordure gauche -->
+                <div class="md:border-l md:border-[#dee2e6] md:pl-8">
+                    <h4 class="text-xl font-bold mb-4 text-[#343a40]">Applications Connexes</h4>
+                
+                    <div class="space-y-4">
+                        <a href="https://fi-regie.github.io/Formation-Securite-ERP/" target="_blank"
+                            class="flex items-start text-[#495057] hover:text-[#0d6efd] transition">
+                            <i class="fas fa-external-link-alt mr-2 mt-1"></i>
+                            <div>
+                                <h5>Formation Sécurité ERP Type L</h5>
+                                <p class="text-sm text-[#6c757d] mt-1">
+                                    Outil pédagogique open source destiné à la formation des responsables techniques d'ERP Type L
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Troisième colonne avec bordure gauche -->
+                <div class="md:border-l md:border-[#dee2e6] md:pl-8">
+                    <h4 class="text-xl font-bold mb-4 text-[#343a40]">Formation</h4>
+                    <div class="space-y-4">
+                        <a href="https://fi-regie.github.io/Reglementation-Spectacle-Itinerant/" target="_blank"
+                            class="flex items-start text-[#495057] hover:text-[#0d6efd] transition">
+                            <i class="fas fa-external-link-alt mr-2 mt-1"></i>
+                            <div>
+                                <h5>Réglementation Spectacle Itinérant</h5>
+                                <p class="text-sm text-[#6c757d] mt-1">
+                                    Portail de veille juridique & de sécurité du Spectacle Itinérant
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t border-[#dee2e6] text-center text-sm text-[#6c757d]">
+                <p>
+                    <i class="fas fa-gavel mr-2"></i>
+                    Quiz CTS Pro - Chapiteaux, Tentes et Structures  
+                </p>
+                <p class="mt-2">
+                    ©️ Open Source • Partage Contribution : https://github.com/fi-regie/Quiz-CTS-Pro • Contact : philippe.potier-regie@proton.me
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION SIMPLIFIÉE ---
         
-        <!-- SECTION 1 : Nombre de questions -->
-        <div class="config-section">
-            <div class="section-title">📊 Nombre de questions</div>
-            <div class="question-selector">
-                <div class="question-option" data-questions="10">10 questions</div>
-                <div class="question-option" data-questions="20">20 questions</div>
-                <div class="question-option selected" data-questions="30">30 questions</div>
-                <div class="question-option" data-questions="40">40 questions</div>
-            </div>
-        </div>
+        // Options de configuration
+        const configOptions = {
+            questionCounts: [
+                { value: 10, label: "10 questions", time: "5-10 min", default: false },
+                { value: 20, label: "20 questions", time: "10-15 min", default: true },
+                { value: 30, label: "30 questions", time: "15-20 min", default: false }
+            ],
+            levels: [
+                { value: "student", label: "Étudiant", icon: "fa-user-graduate", default: false },
+                { value: "pro", label: "Professionnel", icon: "fa-user-tie", default: true },
+                { value: "expert", label: "Expert", icon: "fa-crown", default: false }
+            ],
+            themes: [
+                { value: "general", label: "Généralités CTS", icon: "🏗️", default: true },
+                { value: "construction", label: "Construction", icon: "🔨", default: true },
+                { value: "electricity", label: "Électricité", icon: "⚡", default: true },
+                { value: "safety", label: "Sécurité", icon: "🚨", default: true }
+            ]
+        };
 
-        <!-- SECTION 2 : Niveau de difficulté -->
-        <div class="config-section">
-            <div class="section-title">🎯 Niveau de difficulté</div>
-            <div class="level-selector">
-                <div class="level-option student" data-level="student">
-                    <div class="level-title">Étudiant</div>
-                    <div class="level-desc">Bases de la réglementation</div>
-                    <div class="level-desc">Questions fondamentales</div>
-                </div>
-                <div class="level-option pro selected" data-level="pro">
-                    <div class="level-title">Professionnel</div>
-                    <div class="level-desc">Connaissances approfondies</div>
-                    <div class="level-desc">Cas pratiques</div>
-                </div>
-                <div class="level-option expert" data-level="expert">
-                    <div class="level-title">Expert</div>
-                    <div class="level-desc">Maîtrise complète</div>
-                    <div class="level-desc">Situations complexes</div>
-                </div>
-            </div>
-        </div>
+        // État de configuration
+        const quizConfig = {
+            questionCount: 20,
+            level: "pro",
+            selectedThemes: ["general", "construction", "electricity", "safety"]
+        };
 
-        <!-- SECTION 3 : Thèmes -->
-        <div class="config-section">
-            <div class="section-title">📚 Thèmes du quiz</div>
-            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">
-                Sélectionnez un ou plusieurs thèmes (tous sélectionnés par défaut)
-            </p>
-            <div class="theme-selector">
-                <div class="theme-option selected" data-theme="general">
-                    <div class="theme-icon">🏗️</div>
-                    <div>Généralités</div>
-                </div>
-                <div class="theme-option selected" data-theme="construction">
-                    <div class="theme-icon">🔨</div>
-                    <div>Construction</div>
-                </div>
-                <div class="theme-option selected" data-theme="electricity">
-                    <div class="theme-icon">⚡</div>
-                    <div>Électricité</div>
-                </div>
-                <div class="theme-option selected" data-theme="safety">
-                    <div class="theme-icon">🚨</div>
-                    <div>Sécurité</div>
-                </div>
-            </div>
-        </div>
+        // --- INITIALISATION DE LA CONFIGURATION ---
+        function initConfiguration() {
+            // Générer les options de nombre de questions
+            const questionCountContainer = document.getElementById('questionCountOptions');
+            configOptions.questionCounts.forEach(option => {
+                const isSelected = quizConfig.questionCount === option.value;
+                const div = document.createElement('div');
+                div.className = `quiz-option p-4 border rounded-lg cursor-pointer transition ${isSelected ? 'border-orange-500 bg-orange-50' : 'border-stone-300 hover:bg-stone-50'}`;
+                div.dataset.value = option.value;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-medium">${option.label}</div>
+                            <div class="text-sm text-stone-500">${option.time}</div>
+                        </div>
+                        ${isSelected ? '<i class="fas fa-check text-orange-600"></i>' : ''}
+                    </div>
+                `;
+                div.addEventListener('click', () => selectQuestionCount(option.value));
+                questionCountContainer.appendChild(div);
+            });
 
-        <button class="start-btn" id="startBtn" onclick="startQuiz()">
-            🚀 Démarrer le quiz
-        </button>
-    </div>
+            // Générer les options de niveau
+            const levelContainer = document.getElementById('levelOptions');
+            configOptions.levels.forEach(option => {
+                const isSelected = quizConfig.level === option.value;
+                const div = document.createElement('div');
+                div.className = `quiz-option p-4 border rounded-lg cursor-pointer transition ${isSelected ? 'border-orange-500 bg-orange-50' : 'border-stone-300 hover:bg-stone-50'}`;
+                div.dataset.value = option.value;
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${option.icon} mr-3 ${isSelected ? 'text-orange-600' : 'text-stone-500'}"></i>
+                        <div class="flex-1">
+                            <div class="font-medium">${option.label}</div>
+                        </div>
+                        ${isSelected ? '<i class="fas fa-check text-orange-600"></i>' : ''}
+                    </div>
+                `;
+                div.addEventListener('click', () => selectLevel(option.value));
+                levelContainer.appendChild(div);
+            });
 
-    <!-- ÉCRAN DU QUIZ -->
-    <div class="app-container" id="quizContainer">
-        <!-- STATISTIQUES -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-value" id="currentQuestion">1/30</div>
-                <div class="stat-label">Question</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="correctAnswers">0</div>
-                <div class="stat-label">Réponses correctes</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="scorePercentage">0%</div>
-                <div class="stat-label">Score</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="questionsLeft">30</div>
-                <div class="stat-label">Questions restantes</div>
-            </div>
-        </div>
+            // Générer les options de thèmes
+            const themeContainer = document.getElementById('themeOptions');
+            configOptions.themes.forEach(option => {
+                const isSelected = quizConfig.selectedThemes.includes(option.value);
+                const div = document.createElement('div');
+                div.className = `quiz-option p-3 border rounded-lg cursor-pointer transition ${isSelected ? 'border-emerald-500 bg-emerald-50' : 'border-stone-300 hover:bg-stone-50'}`;
+                div.dataset.value = option.value;
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xl mr-3">${option.icon}</span>
+                        <div class="flex-1 font-medium">${option.label}</div>
+                        ${isSelected ? '<i class="fas fa-check text-emerald-600"></i>' : ''}
+                    </div>
+                `;
+                div.addEventListener('click', () => toggleTheme(option.value));
+                themeContainer.appendChild(div);
+            });
 
-        <!-- BARRE DE PROGRESSION -->
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress" id="progressBar"></div>
-            </div>
-            <div class="progress-text">
-                <span>Début</span>
-                <span id="progressText">0%</span>
-                <span>Fin</span>
-            </div>
-        </div>
+            // Mettre à jour le résumé
+            updateConfigSummary();
+        }
 
-        <!-- CONTENU DES QUESTIONS -->
-        <div id="quizContent"></div>
-
-        <!-- CONTROLES -->
-        <div class="controls">
-            <button class="control-btn prev-btn" onclick="previousQuestion()" disabled>
-                ← Question précédente
-            </button>
+        // --- GESTION DES SÉLECTIONS ---
+        function selectQuestionCount(count) {
+            quizConfig.questionCount = count;
             
-            <div class="action-buttons">
-                <button class="action-btn hint-btn" onclick="showHint()">
-                    💡 Aide
-                </button>
-                <button class="action-btn visual-btn" onclick="showVisualAid()">
-                    📐 Schéma
-                </button>
-                <button class="action-btn show-answer-btn" onclick="showAnswer()">
-                    ✅ Voir réponse
-                </button>
-            </div>
+            // Mettre à jour l'interface
+            document.querySelectorAll('#questionCountOptions .quiz-option').forEach(option => {
+                const optionValue = parseInt(option.dataset.value);
+                if (optionValue === count) {
+                    option.classList.add('border-orange-500', 'bg-orange-50');
+                    option.classList.remove('border-stone-300');
+                } else {
+                    option.classList.remove('border-orange-500', 'bg-orange-50');
+                    option.classList.add('border-stone-300');
+                }
+                
+                // Mettre à jour l'icône de vérification
+                const checkIcon = option.querySelector('.fa-check');
+                if (checkIcon) {
+                    checkIcon.style.display = optionValue === count ? 'block' : 'none';
+                }
+            });
             
-            <button class="control-btn next-btn" onclick="nextQuestion()">
-                Question suivante →
-            </button>
-        </div>
-    </div>
+            updateConfigSummary();
+            updateEstimatedTime();
+        }
 
-    <!-- ÉCRAN DES RÉSULTATS -->
-    <div class="results-screen" id="resultsScreen">
-        <h2 class="results-header">🎉 Résultats du Quiz</h2>
-        
-        <div class="score-display">
-            <div class="score-value" id="finalScore">0%</div>
-            <div class="score-label">Score final</div>
-        </div>
-
-        <div class="results-grid">
-            <div class="result-card">
-                <div class="result-value" id="totalCorrect">0</div>
-                <div class="result-label">Réponses correctes</div>
-            </div>
-            <div class="result-card">
-                <div class="result-value" id="totalIncorrect">0</div>
-                <div class="result-label">Réponses incorrectes</div>
-            </div>
-            <div class="result-card">
-                <div class="result-value" id="totalQuestions">30</div>
-                <div class="result-label">Questions totales</div>
-            </div>
-            <div class="result-card">
-                <div class="result-value" id="totalTime">00:00</div>
-                <div class="result-label">Temps total</div>
-            </div>
-        </div>
-
-        <div class="evaluation">
-            <h3>📊 Analyse de performance</h3>
-            <p id="evaluationText">Chargement de l'analyse...</p>
+        function selectLevel(level) {
+            quizConfig.level = level;
             
-            <h3>💡 Plan d'amélioration</h3>
-            <ul class="advice-list" id="adviceList">
-                <!-- Conseils générés dynamiquement -->
-            </ul>
-        </div>
+            // Mettre à jour l'interface
+            document.querySelectorAll('#levelOptions .quiz-option').forEach(option => {
+                if (option.dataset.value === level) {
+                    option.classList.add('border-orange-500', 'bg-orange-50');
+                    option.classList.remove('border-stone-300');
+                } else {
+                    option.classList.remove('border-orange-500', 'bg-orange-50');
+                    option.classList.add('border-stone-300');
+                }
+                
+                // Mettre à jour l'icône de vérification
+                const checkIcon = option.querySelector('.fa-check');
+                if (checkIcon) {
+                    checkIcon.style.display = option.dataset.value === level ? 'block' : 'none';
+                }
+            });
+            
+            updateConfigSummary();
+        }
 
-        <button class="restart-btn" onclick="restartQuiz()">
-            🔄 Nouveau quiz
-        </button>
-    </div>
+        function toggleTheme(theme) {
+            const index = quizConfig.selectedThemes.indexOf(theme);
+            if (index === -1) {
+                quizConfig.selectedThemes.push(theme);
+            } else {
+                quizConfig.selectedThemes.splice(index, 1);
+            }
+            
+            // Mettre à jour l'interface
+            document.querySelectorAll('#themeOptions .quiz-option').forEach(option => {
+                if (option.dataset.value === theme) {
+                    const isSelected = quizConfig.selectedThemes.includes(theme);
+                    if (isSelected) {
+                        option.classList.add('border-emerald-500', 'bg-emerald-50');
+                        option.classList.remove('border-stone-300');
+                    } else {
+                        option.classList.remove('border-emerald-500', 'bg-emerald-50');
+                        option.classList.add('border-stone-300');
+                    }
+                    
+                    // Mettre à jour l'icône de vérification
+                    const checkIcon = option.querySelector('.fa-check');
+                    if (checkIcon) {
+                        checkIcon.style.display = isSelected ? 'block' : 'none';
+                    }
+                }
+            });
+            
+            updateConfigSummary();
+        }
 
-    <script src="script.js"></script>
+        function updateConfigSummary() {
+            document.getElementById('summaryQuestions').textContent = quizConfig.questionCount;
+            
+            // Trouver le label du niveau
+            const levelOption = configOptions.levels.find(l => l.value === quizConfig.level);
+            document.getElementById('summaryLevel').textContent = levelOption ? levelOption.label : quizConfig.level;
+            
+            document.getElementById('summaryThemes').textContent = `${quizConfig.selectedThemes.length} sélectionné(s)`;
+        }
+
+        function updateEstimatedTime() {
+            const times = {
+                10: "5-10 minutes",
+                20: "10-15 minutes",
+                30: "15-20 minutes"
+            };
+            document.getElementById('estimatedTime').textContent = times[quizConfig.questionCount] || "10-15 minutes";
+        }
+
+        // --- BASE DE DONNÉES ÉTENDUE DES QUESTIONS ---
+        const questionsDatabase = {
+            student: [
+                {
+                    id: 1,
+                    theme: 'GENERAL',
+                    question: "Quelle est la définition réglementaire d'un chapiteau selon l'arrêté CTS ?",
+                    options: [
+                        "Structure textile soutenue par des mâts et des câbles",
+                        "Toute structure temporaire démontable",
+                        "Bâtiment léger de moins de 50m²",
+                        "Structure en toile sans ancrage"
+                    ],
+                    correctAnswer: 0,
+                    hint: "L'arrêté du 23 janvier 1985 définit précisément les différentes catégories de CTS.",
+                    explanation: "Un chapiteau est défini comme une structure textile soutenue par des mâts et des câbles, selon l'article 1 de l'arrêté du 23 janvier 1985.",
+                    detailedExplanation: "Cette définition distingue le chapiteau des tentes et structures. La spécificité 'textile soutenue par des mâts et câbles' est essentielle pour appliquer les bonnes règles de sécurité.",
+                    reference: "Arrêté du 23 janvier 1985, article 1",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "En 2018, un festival a été sanctionné pour avoir présenté une structure métallique comme un chapiteau, contournant ainsi les règles CTS spécifiques."
+                },
+                {
+                    id: 2,
+                    theme: 'CONSTRUCTION',
+                    question: "Quelle est la distance minimale entre un chapiteau et un bâtiment existant ?",
+                    options: [
+                        "3 mètres",
+                        "5 mètres",
+                        "10 mètres",
+                        "Aucune distance minimale n'est imposée"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Cette distance permet l'accès des secours et limite les risques de propagation d'incendie.",
+                    explanation: "Une distance minimale de 5 mètres est requise pour permettre l'accès des secours et éviter la propagation d'incendie.",
+                    detailedExplanation: "Ces 5 mètres sont critiques pour : 1) L'accès des engins de secours 2) La prévention de la propagation du feu 3) L'évacuation sécurisée",
+                    reference: "Arrêté du 23 janvier 1985, article 10",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "Lors d'un incendie à Marseille en 2019, l'impossibilité d'accès des pompiers due à une distance insuffisante a aggravé les dégâts."
+                },
+                {
+                    id: 3,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quelle norme électrique s'applique aux installations temporaires de CTS ?",
+                    options: [
+                        "NFC 15-100 uniquement",
+                        "NF C 15-500 uniquement",
+                        "NFC 15-100 et NF C 15-500",
+                        "Aucune norme spécifique"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Les installations temporaires combinent les exigences des normes permanentes et temporaires.",
+                    explanation: "Les installations doivent respecter à la fois la NFC 15-100 (bases) et la NF C 15-500 (spécificités temporaires).",
+                    detailedExplanation: "La NFC 15-500 complète la 15-100 avec des dispositions pour : installations démontables, protection contre les intempéries, câbles souples autorisés.",
+                    reference: "NF C 15-500 - Installations électriques temporaires",
+                    link: "https://www.boutique.afnor.org/fr-fr/norme/nf-c15500",
+                    caseStudy: "En 2021, un court-circuit dans une installation non conforme a provoqué un incendie dans un chapiteau de 500 places."
+                },
+                {
+                    id: 4,
+                    theme: 'SÉCURITÉ',
+                    question: "Quel est le classement au feu minimum pour les toiles de chapiteau ?",
+                    options: [
+                        "M0 (incombustible)",
+                        "M1 (non inflammable)",
+                        "M2 (difficilement inflammable)",
+                        "M3 (moyennement inflammable)"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Consultez les articles relatifs à la réaction au feu des matériaux textiles.",
+                    explanation: "La toile des chapiteaux doit être classée M1 (non inflammable) ou M2 ignifugé.",
+                    detailedExplanation: "Le classement M1 signifie : indice d'oxygène ≥ 28, essai au chalumeau - pas de gouttes enflammées.",
+                    reference: "Arrêté du 23 janvier 1985, article 15",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "L'incendie du chapiteau de Dijon en 2020 a été aggravé par une toile classée M3."
+                },
+                {
+                    id: 5,
+                    theme: 'GENERAL',
+                    question: "À partir de combien de personnes un chapiteau devient un ERP de 5ème catégorie ?",
+                    options: [
+                        "50 personnes",
+                        "100 personnes",
+                        "200 personnes",
+                        "300 personnes"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Le seuil de 200 personnes est déterminant pour la classification CTS.",
+                    explanation: "Un chapiteau de plus de 200 personnes relève de la 5ème catégorie ERP.",
+                    detailedExplanation: "Seuil spécifique CTS : > 200 personnes = 5ème catégorie. Conséquences : visites commission possibles, registre de sécurité obligatoire.",
+                    reference: "Arrêté du 23 janvier 1985, article 3",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "Un organisateur a été condamné pour ne pas avoir déclaré son chapiteau de 220 places comme ERP 5ème catégorie."
+                },
+                {
+                    id: 6,
+                    theme: 'CONSTRUCTION',
+                    question: "Quelle est la hauteur maximale d'un chapiteau sans autorisation spéciale ?",
+                    options: [
+                        "8 mètres",
+                        "12 mètres",
+                        "15 mètres",
+                        "20 mètres"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Cette limitation concerne la stabilité et la sécurité au vent.",
+                    explanation: "La hauteur maximale est de 12 mètres sans autorisation spéciale.",
+                    detailedExplanation: "Au-delà de 12m, des études de stabilité particulières sont requises, notamment pour la résistance au vent.",
+                    reference: "Guide technique CTS - Ministère de l'Intérieur",
+                    caseStudy: "En 2022, un chapiteau de 18m a dû être démonté pour non-respect de cette hauteur maximale."
+                },
+                {
+                    id: 7,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quelle est la section minimale des conducteurs en cuivre pour l'éclairage ?",
+                    options: [
+                        "1,5 mm²",
+                        "2,5 mm²",
+                        "4 mm²",
+                        "6 mm²"
+                    ],
+                    correctAnswer: 1,
+                    hint: "La section dépend de l'usage et de la longueur du circuit.",
+                    explanation: "La section minimale est de 2,5 mm² pour les circuits d'éclairage en cuivre.",
+                    detailedExplanation: "Cette section permet de limiter la chute de tension et d'assurer la sécurité électrique.",
+                    reference: "NFC 15-100, tableau 52-C",
+                    caseStudy: "Un incendie en 2020 a été causé par une surchauffe due à des câbles de 1,5 mm² sur un circuit de 3kW."
+                },
+                {
+                    id: 8,
+                    theme: 'SÉCURITÉ',
+                    question: "Combien faut-il d'extincteurs pour un chapiteau de 400 m² ?",
+                    options: [
+                        "1 extincteur",
+                        "2 extincteurs",
+                        "3 extincteurs",
+                        "4 extincteurs"
+                    ],
+                    correctAnswer: 1,
+                    hint: "La règle est : 1 extincteur pour 200 m² ou fraction.",
+                    explanation: "Il faut 2 extincteurs (400 m² ÷ 200 m² = 2).",
+                    detailedExplanation: "Ces extincteurs doivent être de type eau + additif 6L, accessibles en moins de 15 secondes de marche.",
+                    reference: "Article MS 54 - Règlement de sécurité",
+                    caseStudy: "Lors d'un départ de feu en 2019, l'absence du deuxième extincteur a retardé l'intervention."
+                },
+                {
+                    id: 9,
+                    theme: 'GENERAL',
+                    question: "Quelle est la durée maximale d'installation d'un CTS sans permis de construire ?",
+                    options: [
+                        "1 mois",
+                        "3 mois",
+                        "6 mois",
+                        "12 mois"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Au-delà de cette durée, l'installation devient considérée comme permanente.",
+                    explanation: "La durée maximale est de 3 mois sans permis de construire.",
+                    detailedExplanation: "Ce délai peut être prolongé sur autorisation spéciale de la mairie, avec justification.",
+                    reference: "Code de l'urbanisme, article R*421-19",
+                    caseStudy: "Une société a été condamnée pour avoir maintenu un chapiteau 5 mois sans autorisation."
+                },
+                {
+                    id: 10,
+                    theme: 'CONSTRUCTION',
+                    question: "Quelle charge au sol minimale doit supporter un chapiteau ?",
+                    options: [
+                        "150 kg/m²",
+                        "200 kg/m²",
+                        "250 kg/m²",
+                        "300 kg/m²"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Cette charge inclut le public, le mobilier et les équipements.",
+                    explanation: "La charge au sol minimale est de 250 kg/m².",
+                    detailedExplanation: "Cette valeur correspond à un public debout dense avec équipements légers.",
+                    reference: "NF P 98-001 - Charges permanentes et d'exploitation",
+                    caseStudy: "L'effondrement partiel d'une estrade en 2018 était dû à une charge de seulement 180 kg/m²."
+                }
+            ],
+            pro: [
+                {
+                    id: 101,
+                    theme: 'SÉCURITÉ',
+                    question: "Pour un chapiteau de 800 places, quel est le classement au feu minimum requis pour la toile ?",
+                    options: [
+                        "M0 (incombustible)",
+                        "M1 (non inflammable)",
+                        "M2 (difficilement inflammable)",
+                        "M3 (moyennement inflammable)"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Consultez les articles relatifs à la réaction au feu des matériaux textiles.",
+                    explanation: "La toile des chapiteaux doit être classée M1 (non inflammable) ou M2 ignifugé, selon l'article 15 de l'arrêté du 23 janvier 1985.",
+                    detailedExplanation: "Le classement M1 signifie : indice d'oxygène ≥ 28, essai au chalumeau - pas de gouttes enflammées, temps de combustion ≤ 5 secondes.",
+                    reference: "Arrêté du 23 janvier 1985, article 15",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "L'incendie du chapiteau de Dijon en 2020 a été aggravé par une toile classée M3 au lieu de M1, propagation en 90 secondes."
+                },
+                {
+                    id: 102,
+                    theme: 'CLASSIFICATION',
+                    question: "Un chapiteau accueillant 250 personnes relève-t-il de la 5ème catégorie ?",
+                    options: [
+                        "Oui, toujours",
+                        "Non, jamais",
+                        "Oui si implanté en plein air",
+                        "Dépend de la hauteur sous toile"
+                    ],
+                    correctAnswer: 0,
+                    hint: "Le seuil de 200 personnes est déterminant pour la classification CTS.",
+                    explanation: "Oui, un chapiteau de plus de 200 personnes relève de la 5ème catégorie ERP, quelle que soit son implantation.",
+                    detailedExplanation: "Seuil spécifique CTS : > 200 personnes = 5ème catégorie. Conséquences : visites commission possibles, registre de sécurité obligatoire.",
+                    reference: "Arrêté du 23 janvier 1985, article 3",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000864644",
+                    caseStudy: "Un organisateur a été condamné pour ne pas avoir déclaré son chapiteau de 220 places comme ERP 5ème catégorie."
+                },
+                {
+                    id: 103,
+                    theme: 'DÉGAGEMENTS',
+                    question: "Combien faut-il de sorties pour un chapiteau de 600 personnes ?",
+                    options: [
+                        "2 sorties minimum",
+                        "3 sorties minimum", 
+                        "4 sorties minimum",
+                        "5 sorties minimum"
+                    ],
+                    correctAnswer: 1,
+                    hint: "La règle est : 2 sorties jusqu'à 500 personnes, puis +1 sortie par tranche de 500 personnes.",
+                    explanation: "Il faut 3 sorties minimum : 2 pour les premières 500 personnes + 1 pour les 100 personnes supplémentaires.",
+                    detailedExplanation: "Calcul : 600 personnes = 2 sorties (base) + 1 sortie supplémentaire (dépassement 500). Largeur cumulée minimale : 600/100 = 6 UP × 0.60m = 3.60m.",
+                    reference: "Article CO 38 - Règlement de sécurité",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000290033",
+                    caseStudy: "En 2017, l'évacuation difficile d'un chapiteau surchargé (1 sortie pour 550 personnes) a fait 8 blessés."
+                },
+                {
+                    id: 104,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quelle est la distance maximale entre deux prises de courant en CTS ?",
+                    options: [
+                        "2 mètres",
+                        "4 mètres",
+                        "6 mètres",
+                        "8 mètres"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Cette distance limite l'usage de rallonges dangereuses.",
+                    explanation: "La distance maximale est de 4 mètres entre deux prises de courant.",
+                    detailedExplanation: "Cette règle vise à éviter les rallonges multiples et les risques de trébuchement.",
+                    reference: "NF C 15-500, article 559.5",
+                    caseStudy: "En 2019, une chute avec blessure due à un enchevêtrement de rallonges sur 10 mètres."
+                },
+                {
+                    id: 105,
+                    theme: 'CONSTRUCTION',
+                    question: "Quel type d'ancrage est obligatoire pour un chapiteau en zone ventée ?",
+                    options: [
+                        "Ancrages en béton",
+                        "Plot-béton de 500kg",
+                        "Ancrages vissés ou enterrés",
+                        "Contrepoids en eau"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Les ancrages doivent résister aux efforts de soulèvement.",
+                    explanation: "Des ancrages vissés ou enterrés sont obligatoires en zone ventée.",
+                    detailedExplanation: "Ces ancrages doivent être calculés pour résister à un vent de 120 km/h selon la zone.",
+                    reference: "DTU 43.1 - Règles NV 65",
+                    caseStudy: "En 2018, un chapiteau ancré avec des sacs de sable a été arraché par un vent de 100 km/h."
+                },
+                {
+                    id: 106,
+                    theme: 'MATÉRIAUX',
+                    question: "Quelle est la durée de validité d'un certificat d'ignifugation pour toile de chapiteau ?",
+                    options: [
+                        "1 an",
+                        "3 ans",
+                        "5 ans",
+                        "Illimitée si bien entretenue"
+                    ],
+                    correctAnswer: 2,
+                    hint: "L'ignifugation perd son efficacité avec le temps et les conditions météorologiques.",
+                    explanation: "La durée de validité est généralement de 5 ans, mais doit être vérifiée annuellement en conditions sévères.",
+                    detailedExplanation: "Facteurs réduisant la durée : UV, pluie acide, frottements, nettoyages. Contrôle annuel recommandé par test au chalumeau.",
+                    reference: "Guide technique CTS - Ministère de l'Intérieur",
+                    caseStudy: "Incendie de Nantes 2019 : toile ignifugée il y a 7 ans, efficacité nulle, propagation en 2 minutes."
+                },
+                {
+                    id: 107,
+                    theme: 'SECOURS',
+                    question: "Quel est le délai maximum d'intervention des secours intégré dans le plan d'évacuation ?",
+                    options: [
+                        "5 minutes",
+                        "10 minutes",
+                        "15 minutes",
+                        "30 minutes"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Ce délai correspond au temps d'évacuation complet de la structure.",
+                    explanation: "Le plan d'évacuation doit prévoir une évacuation complète en moins de 10 minutes.",
+                    detailedExplanation: "Calcul basé sur : temps de détection (2 min) + alerte (1 min) + évacuation (6 min) + marge (1 min) = 10 minutes max.",
+                    reference: "Article MS 46 - Règlement de sécurité",
+                    link: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000290033",
+                    caseStudy: "Exercice réussi à Strasbourg : 850 personnes évacuées en 8 minutes 30 grâce à un plan bien préparé."
+                },
+                {
+                    id: 108,
+                    theme: 'JURISPRUDENCE',
+                    question: "Selon la jurisprudence, quelle est la responsabilité du responsable technique en cas d'effondrement dû à des ancrages défectueux ?",
+                    options: [
+                        "Responsabilité civile uniquement",
+                        "Responsabilité pénale pour mise en danger d'autrui",
+                        "Aucune responsabilité si le constructeur est fautif",
+                        "Responsabilité administrative uniquement"
+                    ],
+                    correctAnswer: 1,
+                    hint: "L'article 223-1 du Code pénal s'applique en cas de violation délibérée des obligations de sécurité.",
+                    explanation: "Le responsable technique engage sa responsabilité pénale (article 223-1 CP) s'il a manqué à son obligation de vérification des ancrages.",
+                    detailedExplanation: "La jurisprudence considère que le responsable technique doit vérifier personnellement les points critiques : ancrages, stabilité, conformité des matériaux.",
+                    reference: "Code pénal, article 223-1",
+                    link: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417884/",
+                    caseStudy: "Tribunal correctionnel de Lyon, 2020 : 6 mois avec sursis + 15 000€ d'amende pour non-contrôle des ancrages."
+                },
+                {
+                    id: 109,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quelle est la tension maximale autorisée pour les installations temporaires en CTS ?",
+                    options: [
+                        "230V monophasé",
+                        "400V triphasé",
+                        "500V",
+                        "1000V"
+                    ],
+                    correctAnswer: 1,
+                    hint: "La tension dépend des besoins en puissance des équipements.",
+                    explanation: "La tension maximale est de 400V triphasé pour les installations temporaires.",
+                    detailedExplanation: "Cette tension permet d'alimenter des équipements puissants (sono, lumières) tout en respectant les limites de sécurité.",
+                    reference: "NF C 15-500, article 559.1",
+                    caseStudy: "En 2021, une installation en 500V a provoqué un arc électrique et un départ de feu."
+                },
+                {
+                    id: 110,
+                    theme: 'SÉCURITÉ',
+                    question: "Quelle est la distance maximale à parcourir pour atteindre un extincteur ?",
+                    options: [
+                        "10 mètres",
+                        "15 mètres",
+                        "20 mètres",
+                        "25 mètres"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Cette distance garantit une intervention rapide en cas de départ de feu.",
+                    explanation: "La distance maximale est de 15 mètres à parcourir jusqu'à un extincteur.",
+                    detailedExplanation: "Calcul basé sur un temps d'intervention de 30 secondes maximum pour un départ de feu naissant.",
+                    reference: "Article MS 54 - Règlement de sécurité",
+                    caseStudy: "Lors d'un incendie en 2020, le temps d'accès à l'extincteur (25m) a permis au feu de se développer."
+                },
+                {
+                    id: 111,
+                    theme: 'CONSTRUCTION',
+                    question: "Quelle est la pente minimale recommandée pour l'écoulement des eaux de pluie sur une toile ?",
+                    options: [
+                        "5%",
+                        "10%",
+                        "15%",
+                        "20%"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Cette pente évite la stagnation de l'eau et le risque d'effondrement.",
+                    explanation: "La pente minimale recommandée est de 15% pour l'écoulement des eaux.",
+                    detailedExplanation: "Une pente inférieure peut provoquer : accumulation d'eau, surcharge structurelle, risques de déchirure.",
+                    reference: "DTU 43.1 - Règles de conception",
+                    caseStudy: "En 2019, l'effondrement d'un chapiteau sous 30cm d'eau accumulée (pente de 8%)."
+                },
+                {
+                    id: 112,
+                    theme: 'MATÉRIAUX',
+                    question: "Quel classement au feu pour les décors flottants (banderoles, draperies) ?",
+                    options: [
+                        "M0 obligatoire",
+                        "M1 obligatoire",
+                        "M2 minimum",
+                        "M3 accepté"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Les éléments suspendus présentent un risque particulier de propagation verticale.",
+                    explanation: "Les décors flottants doivent être classés M1 (non inflammable).",
+                    detailedExplanation: "Risque spécifique : propagation rapide par les courants d'air chaud, difficulté d'extinction.",
+                    reference: "Article AM 11 - Règlement de sécurité",
+                    caseStudy: "Incendie du théâtre de Nantes 2018 : propagation en 45 secondes via des banderoles M4."
+                },
+                {
+                    id: 113,
+                    theme: 'SECOURS',
+                    question: "Combien d'exercices d'évacuation annuels sont obligatoires pour un CTS ?",
+                    options: [
+                        "1 exercice",
+                        "2 exercices",
+                        "3 exercices",
+                        "4 exercices"
+                    ],
+                    correctAnswer: 0,
+                    hint: "La fréquence dépend de la catégorie de l'établissement.",
+                    explanation: "1 exercice d'évacuation annuel est obligatoire pour les CTS.",
+                    detailedExplanation: "Cet exercice doit impliquer tout le personnel et faire l'objet d'un compte-rendu dans le registre de sécurité.",
+                    reference: "Article MS 46 - Règlement de sécurité",
+                    caseStudy: "Lors d'un vrai incendie en 2021, le personnel formé grâce aux exercices a évacué 300 personnes en 4 minutes."
+                },
+                {
+                    id: 114,
+                    theme: 'JURISPRUDENCE',
+                    question: "Quelle amende maximale pour mise en danger de la vie d'autrui dans un CTS ?",
+                    options: [
+                        "15 000 €",
+                        "30 000 €",
+                        "75 000 €",
+                        "150 000 €"
+                    ],
+                    correctAnswer: 3,
+                    hint: "L'article 223-1 du Code pénal prévoit des peines sévères.",
+                    explanation: "L'amende maximale est de 150 000 € pour mise en danger de la vie d'autrui.",
+                    detailedExplanation: "Peines complémentaires possibles : interdiction d'exercer, fermeture administrative, dommages-intérêts.",
+                    reference: "Code pénal, article 223-1",
+                    caseStudy: "Tribunal de Lille 2022 : 120 000 € d'amende + 2 ans avec sursis pour un chapiteau surchargé non conforme."
+                },
+                {
+                    id: 115,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quelle est la section minimale du conducteur de protection (terre) ?",
+                    options: [
+                        "Égale aux conducteurs actifs",
+                        "Moitié de la section des conducteurs actifs",
+                        "2,5 mm² minimum",
+                        "1,5 mm² minimum"
+                    ],
+                    correctAnswer: 0,
+                    hint: "Le conducteur de protection doit pouvoir supporter le même courant de défaut.",
+                    explanation: "La section doit être égale à celle des conducteurs actifs.",
+                    detailedExplanation: "Exception : si la section des actifs > 16 mm², la terre peut être de 16 mm² minimum.",
+                    reference: "NFC 15-100, tableau 54G",
+                    caseStudy: "Électrocution en 2020 due à une terre de section insuffisante qui a fondu."
+                }
+            ],
+            expert: [
+                {
+                    id: 201,
+                    theme: 'JURISPRUDENCE',
+                    question: "Selon un arrêt de la Cour de cassation, quelle est la faute caractérisée d'un responsable CTS ?",
+                    options: [
+                        "Ne pas avoir un SSIAP présent",
+                        "Avoir dépassé la jauge de 10%",
+                        "Avoir utilisé des matériaux M2 au lieu de M1",
+                        "Avoir omis de vérifier les certificats d'ignifugation"
+                    ],
+                    correctAnswer: 3,
+                    hint: "La vérification des documents techniques est une obligation de moyen renforcée.",
+                    explanation: "L'omission de vérification des certificats d'ignifugation constitue une faute caractérisée.",
+                    detailedExplanation: "La jurisprudence considère que le responsable doit vérifier personnellement la validité et l'authenticité des certificats.",
+                    reference: "Cass. Crim. 15 janvier 2020, n° 19-82.456",
+                    caseStudy: "Condamnation confirmée en appel : responsable technique ayant accepté une toile avec certificat falsifié."
+                },
+                {
+                    id: 202,
+                    theme: 'MATÉRIAUX',
+                    question: "Quel est l'indice d'oxygène minimum pour un matériau classé M1 ?",
+                    options: [
+                        "IO ≥ 21",
+                        "IO ≥ 28",
+                        "IO ≥ 35",
+                        "IO ≥ 42"
+                    ],
+                    correctAnswer: 1,
+                    hint: "L'indice d'oxygène mesure la combustibilité d'un matériau.",
+                    explanation: "L'indice d'oxygène minimum est de 28 pour un matériau classé M1.",
+                    detailedExplanation: "IO = pourcentage minimum d'oxygène nécessaire à la combustion. Plus l'IO est élevé, moins le matériau est combustible.",
+                    reference: "Norme NF EN ISO 4589-2",
+                    caseStudy: "Matériau présenté comme M1 mais avec IO 24 : combustion spontanée à 280°C au lieu de 350°C."
+                },
+                {
+                    id: 203,
+                    theme: 'SECOURS',
+                    question: "Quel est le temps maximum d'évacuation calculé pour un chapiteau de 1000 places ?",
+                    options: [
+                        "4 minutes",
+                        "6 minutes",
+                        "8 minutes",
+                        "10 minutes"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Le calcul inclut le temps de perception, de décision et de mouvement.",
+                    explanation: "Le temps maximum théorique est de 8 minutes pour 1000 personnes.",
+                    detailedExplanation: "Calcul : 1000 personnes ÷ (3 sorties × 50 pers/min) = 6.7 min + 1.3 min de marge = 8 min.",
+                    reference: "Méthode de calcul SIA 81 - Sécurité incendie",
+                    caseStudy: "Exercice réel : évacuation de 980 personnes en 7 minutes 45 avec un personnel bien formé."
+                },
+                {
+                    id: 204,
+                    theme: 'CONSTRUCTION',
+                    question: "Quelle est la pression de calcul pour les ancrages en zone à vent extrême ?",
+                    options: [
+                        "500 Pa",
+                        "750 Pa",
+                        "1000 Pa",
+                        "1500 Pa"
+                    ],
+                    correctAnswer: 3,
+                    hint: "La pression varie selon la zone géographique et l'altitude.",
+                    explanation: "La pression de calcul est de 1500 Pa en zone à vent extrême.",
+                    detailedExplanation: "Cette pression correspond à un vent de 160 km/h. Les ancrages doivent résister à cette pression + coefficient de sécurité.",
+                    reference: "Eurocode 1 - Actions sur les structures",
+                    caseStudy: "Tempête de 2019 : seul le chapiteau calculé à 1500 Pa a résisté aux rafales à 155 km/h."
+                },
+                {
+                    id: 205,
+                    theme: 'ÉLECTRICITÉ',
+                    question: "Quel est le courant de défaut maximum pour un DDR 30mA en CTS ?",
+                    options: [
+                        "15 mA",
+                        "30 mA",
+                        "100 mA",
+                        "300 mA"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Le DDR doit déclencher avant que le courant ne devienne dangereux.",
+                    explanation: "Le courant de défaut maximum est de 30 mA pour la protection des personnes.",
+                    detailedExplanation: "À 30 mA, le temps de déclenchement doit être ≤ 40 ms pour éviter la fibrillation cardiaque.",
+                    reference: "NFC 15-100, article 411.3.3",
+                    caseStudy: "Défaillance d'un DDR calibré à 100 mA : électrisation grave avec arrêt cardiaque à 80 mA."
+                },
+                {
+                    id: 206,
+                    theme: 'SÉCURITÉ',
+                    question: "Quelle est la densité de charge au feu maximale pour un local de CTS ?",
+                    options: [
+                        "200 MJ/m²",
+                        "400 MJ/m²",
+                        "600 MJ/m²",
+                        "800 MJ/m²"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Cette valeur limite l'énergie calorifique potentiellement dégagée.",
+                    explanation: "La densité maximale est de 600 MJ/m² pour un local de CTS.",
+                    detailedExplanation: "Calcul basé sur la somme des pouvoirs calorifiques de tous les matériaux présents.",
+                    reference: "Méthode de la charge au feu - Guide APSAD",
+                    caseStudy: "Incendie ultra-rapide en 2021 : charge au feu de 850 MJ/m² due à des décors en polystyrène."
+                },
+                {
+                    id: 207,
+                    theme: 'JURISPRUDENCE',
+                    question: "Quelle est la prescription pour une action en responsabilité après un accident en CTS ?",
+                    options: [
+                        "3 ans",
+                        "5 ans",
+                        "10 ans",
+                        "20 ans"
+                    ],
+                    correctAnswer: 2,
+                    hint: "Le délai est plus long pour les atteintes à l'intégrité physique.",
+                    explanation: "La prescription est de 10 ans à compter de la consolidation du dommage.",
+                    detailedExplanation: "Délai spécifique pour les atteintes à l'intégrité physique (article 2226 du Code civil).",
+                    reference: "Code civil, article 2226",
+                    caseStudy: "Victime d'un effondrement en 2010 a pu agir en 2019 après complications médicales."
+                },
+                {
+                    id: 208,
+                    theme: 'MATÉRIAUX',
+                    question: "Quel est le taux d'émission de fumées maximum pour un matériau classé M1 ?",
+                    options: [
+                        "≤ 100",
+                        "≤ 200",
+                        "≤ 300",
+                        "≤ 400"
+                    ],
+                    correctAnswer: 1,
+                    hint: "Les fumées sont responsables de 80% des décès dans les incendies.",
+                    explanation: "Le taux maximum est de 200 pour un matériau classé M1.",
+                    detailedExplanation: "Mesuré par l'indice d'opacité des fumées (ISO 5659-2). Les fumées doivent être non toxiques et peu opaques.",
+                    reference: "Norme NF EN 13823 - Essai SBI",
+                    caseStudy: "Matériau M1 rejeté : émission de fumées à 350 avec toxicité élevée (CO à 5000 ppm)."
+                },
+                {
+                    id: 209,
+                    theme: 'SECOURS',
+                    question: "Quelle est la largeur efficace minimale d'une issue compte tenu du phénomène d'arc-boutement ?",
+                    options: [
+                        "Largeur nominale - 15 cm",
+                        "Largeur nominale - 10 cm",
+                        "Largeur nominale - 5 cm",
+                        "Largeur nominale - 0 cm"
+                    ],
+                    correctAnswer: 0,
+                    hint: "L'arc-boutement réduit la largeur utile lors d'une évacuation dense.",
+                    explanation: "La largeur efficace est la largeur nominale moins 15 cm.",
+                    detailedExplanation: "Phénomène d'arc-boutement : les épaules des personnes créent un goulot d'étranglement même dans une issue large.",
+                    reference: "Étude du CSTB - Modélisation des flux de foule",
+                    caseStudy: "Sortie de 1.20m nominale mais efficace à 1.05m : réduction de 25% du débit d'évacuation."
+                },
+                {
+                    id: 210,
+                    theme: 'CONSTRUCTION',
+                    question: "Quel est le coefficient de sécurité minimal pour les câbles de tension d'un chapiteau ?",
+                    options: [
+                        "2",
+                        "3",
+                        "4",
+                        "5"
+                    ],
+                    correctAnswer: 3,
+                    hint: "Les câbles sont soumis à des efforts dynamiques et des facteurs d'usure.",
+                    explanation: "Le coefficient de sécurité minimal est de 4 pour les câbles de tension.",
+                    detailedExplanation: "Un câble de rupture à 4000 kg doit être utilisé pour une tension de 1000 kg max.",
+                    reference: "DTU 43.1 - Règles de calcul des structures tendues",
+                    caseStudy: "Rupture de câble en 2018 : coefficient de 2.5 seulement, rupture à 1800 kg pour une charge de 700 kg."
+                }
+            ]
+        };
+
+        // --- GESTION DU QUIZ ---
+        let quizState = {
+            questions: [],
+            currentQuestionIndex: 0,
+            score: 0,
+            answers: [],
+            startTime: null,
+            timerInterval: null,
+            totalSeconds: 0
+        };
+
+        // --- CONTENU PÉDAGOGIQUE ---
+        const educationalContent = {
+            caseStudies: [
+                {
+                    title: "Effondrement partiel de chapiteau - Toulouse 2019",
+                    content: `
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 border-red-500 border border-stone-200">
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-bold mr-3">
+                                        Tribunal Correctionnel
+                                    </div>
+                                    <div class="text-sm text-stone-500">Toulouse, 15 juillet 2019</div>
+                                </div>
+                                <h4 class="text-xl font-bold mb-2">Effondrement partiel de chapiteau</h4>
+                                <p class="text-stone-700 mb-4">
+                                    Un chapiteau de 2000 places s'est partiellement effondré lors d'un festival suite à des vents de 80 km/h.
+                                    Les ancrages n'étaient pas conformes à la réglementation CTS.
+                                </p>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-gavel text-red-500 mr-2"></i>
+                                        <span class="font-bold">Condamnation :</span>
+                                        <span class="ml-2">8 mois avec sursis</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-euro-sign text-red-500 mr-2"></i>
+                                        <span class="font-bold">Amende :</span>
+                                        <span class="ml-2">35 000 €</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user-injured text-red-500 mr-2"></i>
+                                        <span class="font-bold">Blessés :</span>
+                                        <span class="ml-2">12 blessés légers</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                {
+                    title: "Incendie dans une tente d'exposition - Lyon 2021",
+                    content: `
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 border-orange-500 border border-stone-200">
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-bold mr-3">
+                                        Cour d'Appel
+                                    </div>
+                                    <div class="text-sm text-stone-500">Lyon, 22 mars 2021</div>
+                                </div>
+                                <h4 class="text-xl font-bold mb-2">Incendie dans une tente d'exposition</h4>
+                                <p class="text-stone-700 mb-4">
+                                    Un départ de feu dans une installation électrique provisoire a entraîné la destruction totale d'une tente de 800m².
+                                    Absence de détection incendie et extincteurs non accessibles.
+                                </p>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-gavel text-orange-500 mr-2"></i>
+                                        <span class="font-bold">Condamnation :</span>
+                                        <span class="ml-2">1 an avec sursis</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-euro-sign text-orange-500 mr-2"></i>
+                                        <span class="font-bold">Amende :</span>
+                                        <span class="ml-2">50 000 €</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+            ]
+        };
+
+        // --- FONCTIONS DE NAVIGATION ---
+        function switchTab(tabId) {
+            console.log("Changement d'onglet vers :", tabId);
+            
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Afficher l'onglet sélectionné
+            const tab = document.getElementById(tabId);
+            if (tab) {
+                tab.classList.add('active');
+            }
+            
+            // Mettre à jour les boutons de navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('border-orange-600', 'text-orange-600', 'border-emerald-600', 'text-emerald-600');
+                btn.classList.add('border-transparent');
+            });
+            
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                if (tabId === 'resultats') {
+                    activeBtn.classList.add('border-emerald-600', 'text-emerald-600');
+                } else {
+                    activeBtn.classList.add('border-orange-600', 'text-orange-600');
+                }
+                activeBtn.classList.remove('border-transparent');
+            }
+            
+            // Charger le contenu spécifique si nécessaire
+            if (tabId === 'cas_reels') {
+                loadCaseStudies();
+            }
+            
+            // Si on bascule vers les résultats, afficher les résultats
+            if (tabId === 'resultats' && quizState.questions.length > 0) {
+                showResults();
+            }
+        }
+
+        function loadCaseStudies() {
+            const container = document.getElementById('caseStudiesContent');
+            if (!container) return;
+            
+            let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">';
+            
+            educationalContent.caseStudies.forEach((caseStudy) => {
+                html += caseStudy.content;
+            });
+            
+            html += '</div>';
+            
+            // Ajouter l'analyse des causes
+            html += `
+                <div class="bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-search text-slate-700 mr-3"></i>
+                        Analyse des Causes Récurrentes
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-lg mb-3">Causes Techniques</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Ancrages insuffisants ou mal réalisés</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Installations électriques non conformes NFC 15-100</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Matériaux non classés au feu (M1 obligatoire)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-3">Causes Organisationnelles</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Absence de contrôle des ancrages avant événement</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Personnel non formé aux procédures d'évacuation</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span>Registre de sécurité non tenu à jour</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function startQuiz() {
+            // Vérifier qu'au moins un thème est sélectionné
+            if (quizConfig.selectedThemes.length === 0) {
+                alert("Veuillez sélectionner au moins un thème pour le quiz.");
+                return;
+            }
+
+            // Générer les questions selon la configuration
+            quizState.questions = generateQuizQuestions();
+            
+            if (quizState.questions.length === 0) {
+                alert("Aucune question disponible avec la configuration actuelle. Veuillez ajuster les paramètres.");
+                return;
+            }
+
+            // Initialiser l'état du quiz
+            quizState.currentQuestionIndex = 0;
+            quizState.score = 0;
+            quizState.answers = [];
+            quizState.startTime = new Date();
+            quizState.totalSeconds = 0;
+
+            // Démarrer le timer
+            startTimer();
+
+            // Basculer vers l'onglet quiz
+            switchTab('quiz');
+
+            // Afficher la première question
+            displayCurrentQuestion();
+        }
+
+        function generateQuizQuestions() {
+            const allQuestions = [];
+            
+            // Récupérer les questions du niveau sélectionné
+            const levelQuestions = questionsDatabase[quizConfig.level] || [];
+            
+            // Filtrer par thèmes sélectionnés
+            const filteredQuestions = levelQuestions.filter(q => 
+                quizConfig.selectedThemes.some(theme => 
+                    q.theme.toLowerCase().includes(theme.toLowerCase())
+                )
+            );
+            
+            // Si pas assez de questions, prendre toutes les questions du niveau
+            const questionsPool = filteredQuestions.length >= quizConfig.questionCount 
+                ? filteredQuestions 
+                : levelQuestions;
+            
+            // Mélanger les questions
+            const shuffledQuestions = [...questionsPool].sort(() => Math.random() - 0.5);
+            
+            // Prendre le nombre demandé de questions
+            return shuffledQuestions.slice(0, quizConfig.questionCount);
+        }
+
+        function displayCurrentQuestion() {
+            const question = quizState.questions[quizState.currentQuestionIndex];
+            if (!question) return;
+
+            // Mettre à jour les indicateurs
+            document.getElementById('currentQuestion').textContent = 
+                `${quizState.currentQuestionIndex + 1}/${quizState.questions.length}`;
+            document.getElementById('questionsLeft').textContent = 
+                quizState.questions.length - quizState.currentQuestionIndex - 1;
+            
+            // Mettre à jour la progression
+            const progress = ((quizState.currentQuestionIndex + 1) / quizState.questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${Math.round(progress)}%`;
+
+            // Afficher la question
+            document.getElementById('questionTheme').textContent = question.theme;
+            document.getElementById('questionText').textContent = question.question;
+
+            // Afficher les options
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'quiz-option p-4 border border-stone-300 rounded-lg cursor-pointer hover:bg-stone-50 transition';
+                optionElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full border border-stone-300 flex items-center justify-center mr-4 font-bold">
+                            ${String.fromCharCode(65 + index)}
+                        </div>
+                        <div class="flex-1">${option}</div>
+                    </div>
+                `;
+                
+                optionElement.addEventListener('click', () => selectAnswer(index));
+                optionsContainer.appendChild(optionElement);
+            });
+
+            // Cacher les feedbacks précédents
+            document.getElementById('hintContainer').classList.add('hidden');
+            document.getElementById('feedbackContainer').classList.add('hidden');
+            document.getElementById('caseStudyContainer').classList.add('hidden');
+            document.getElementById('referenceContainer').classList.add('hidden');
+
+            // Gérer les boutons de navigation
+            document.getElementById('prevBtn').disabled = quizState.currentQuestionIndex === 0;
+
+            // Mettre à jour le score
+            updateScoreDisplay();
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = quizState.questions[quizState.currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correctAnswer;
+
+            // Enregistrer la réponse
+            quizState.answers[quizState.currentQuestionIndex] = {
+                questionId: question.id,
+                selectedAnswer: selectedIndex,
+                isCorrect: isCorrect,
+                timeSpent: quizState.totalSeconds
+            };
+
+            if (isCorrect) {
+                quizState.score++;
+            }
+
+            // Afficher le feedback
+            showFeedback(question, selectedIndex, isCorrect);
+            
+            // Mettre à jour le score
+            updateScoreDisplay();
+        }
+
+        function showFeedback(question, selectedIndex, isCorrect) {
+            // Désactiver toutes les options
+            document.querySelectorAll('#quizOptions .quiz-option').forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === question.correctAnswer) {
+                    option.classList.add('correct', 'border-emerald-500', 'bg-emerald-50');
+                } else if (index === selectedIndex && !isCorrect) {
+                    option.classList.add('incorrect', 'border-red-500', 'bg-red-50');
+                }
+            });
+
+            // Afficher le feedback détaillé
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            feedbackContainer.innerHTML = `
+                <div class="${isCorrect ? 'bg-emerald-50 border-emerald-500' : 'bg-red-50 border-red-500'} rounded-lg p-4 border-l-4 mb-4">
+                    <div class="flex items-start">
+                        <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-red-600'} text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold ${isCorrect ? 'text-emerald-800' : 'text-red-800'} mb-1">
+                                ${isCorrect ? 'Bonne réponse !' : 'Réponse incorrecte'}
+                            </h4>
+                            <p class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} mb-2">
+                                ${question.explanation}
+                            </p>
+                            ${question.detailedExplanation ? `
+                                <div class="mt-3 p-3 bg-white rounded border ${isCorrect ? 'border-emerald-200' : 'border-red-200'}">
+                                    <p class="font-semibold ${isCorrect ? 'text-emerald-800' : 'text-red-800'} mb-1">Explication détaillée :</p>
+                                    <p class="text-sm ${isCorrect ? 'text-emerald-700' : 'text-red-700'}">${question.detailedExplanation}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            feedbackContainer.classList.remove('hidden');
+
+            // Afficher l'étude de cas si disponible
+            if (question.caseStudy) {
+                const caseStudyContainer = document.getElementById('caseStudyContainer');
+                caseStudyContainer.innerHTML = `
+                    <p class="text-sm text-stone-700">${question.caseStudy}</p>
+                `;
+                caseStudyContainer.classList.remove('hidden');
+            }
+
+            // Afficher la référence si disponible
+            if (question.reference) {
+                const referenceContainer = document.getElementById('referenceContainer');
+                referenceContainer.innerHTML = `
+                    <p class="text-sm text-stone-600">${question.reference}</p>
+                    ${question.link ? `<a href="${question.link}" target="_blank" class="text-sm text-blue-600 hover:underline inline-block mt-2">
+                        <i class="fas fa-external-link-alt mr-1"></i>
+                        Consulter le texte
+                    </a>` : ''}
+                `;
+                referenceContainer.classList.remove('hidden');
+            }
+        }
+
+        function updateScoreDisplay() {
+            const currentQuestion = quizState.currentQuestionIndex + 1;
+            const percentage = currentQuestion > 0 ? 
+                Math.round((quizState.score / currentQuestion) * 100) : 0;
+            
+            document.getElementById('correctAnswers').textContent = quizState.score;
+            document.getElementById('scorePercentage').textContent = `${percentage}%`;
+        }
+
+        function showHint() {
+            const question = quizState.questions[quizState.currentQuestionIndex];
+            if (!question) return;
+            
+            document.getElementById('hintText').textContent = question.hint;
+            document.getElementById('hintContainer').classList.remove('hidden');
+        }
+
+        function previousQuestion() {
+            if (quizState.currentQuestionIndex > 0) {
+                quizState.currentQuestionIndex--;
+                displayCurrentQuestion();
+            }
+        }
+
+        function nextQuestionOrFinish() {
+            if (quizState.currentQuestionIndex < quizState.questions.length - 1) {
+                quizState.currentQuestionIndex++;
+                displayCurrentQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // --- TIMER ---
+        function startTimer() {
+            clearInterval(quizState.timerInterval);
+            quizState.totalSeconds = 0;
+            
+            quizState.timerInterval = setInterval(() => {
+                quizState.totalSeconds++;
+                const minutes = Math.floor(quizState.totalSeconds / 60);
+                const seconds = quizState.totalSeconds % 60;
+                document.getElementById('globalTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function finishQuiz() {
+            clearInterval(quizState.timerInterval);
+            switchTab('resultats');
+        }
+
+        function showResults() {
+            const totalQuestions = quizState.questions.length;
+            const percentage = totalQuestions > 0 ? Math.round((quizState.score / totalQuestions) * 100) : 0;
+            
+            // Mettre à jour les résultats
+            document.getElementById('finalScorePercentage').textContent = `${percentage}%`;
+            document.getElementById('totalCorrectAnswers').textContent = quizState.score;
+            document.getElementById('totalTimeTaken').textContent = formatTime(quizState.totalSeconds);
+            document.getElementById('averageTime').textContent = totalQuestions > 0 ? 
+                `${Math.round(quizState.totalSeconds / totalQuestions)}s` : '0s';
+            
+            // Mettre à jour le certificat
+            document.getElementById('certificateScore').textContent = `${percentage}%`;
+            
+            // Créer le graphique de performance
+            createPerformanceChart();
+            
+            // Générer les conseils
+            generateAdvice(percentage);
+            
+            // Afficher les résultats
+            document.getElementById('resultsContainer').classList.remove('hidden');
+            document.getElementById('noResultsMessage').style.display = 'none';
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function createPerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Analyser les performances par thème
+            const themeStats = {};
+            quizState.questions.forEach((question, index) => {
+                const answer = quizState.quizData.answers[index];
+                if (!themeStats[question.theme]) {
+                    themeStats[question.theme] = { correct: 0, total: 0 };
+                }
+                themeStats[question.theme].total++;
+                if (answer && answer.isCorrect) {
+                    themeStats[question.theme].correct++;
+                }
+            });
+            
+            const themes = Object.keys(themeStats);
+            const percentages = themes.map(theme => {
+                const stat = themeStats[theme];
+                return stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+            });
+            
+            // Détruire le graphique existant
+            if (window.performanceChart) {
+                window.performanceChart.destroy();
+            }
+            
+            window.performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: themes,
+                    datasets: [{
+                        label: 'Score par thème (%)',
+                        data: percentages,
+                        backgroundColor: [
+                            'rgba(234, 88, 12, 0.7)',
+                            'rgba(5, 150, 105, 0.7)',
+                            'rgba(51, 65, 85, 0.7)',
+                            'rgba(220, 38, 38, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderColor: [
+                            '#ea580c',
+                            '#059669',
+                            '#334155',
+                            '#dc2626',
+                            '#f59e0b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateAdvice(scorePercentage) {
+            const adviceList = document.getElementById('adviceList');
+            adviceList.innerHTML = '';
+            
+            const advices = [];
+            
+            if (scorePercentage < 50) {
+                advices.push(
+                    '<li class="flex items-start"><i class="fas fa-book text-red-500 mt-1 mr-2"></i><span><strong>Revisez les bases :</strong> Consultez l\'arrêté du 23 janvier 1985</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-graduation-cap text-red-500 mt-1 mr-2"></i><span><strong>Formation recommandée :</strong> Suivez une formation CTS de niveau initiation</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-file-contract text-red-500 mt-1 mr-2"></i><span><strong>Étudiez les cas :</strong> Analysez les études de cas dans l\'onglet dédié</span></li>'
+                );
+            } else if (scorePercentage < 75) {
+                advices.push(
+                    '<li class="flex items-start"><i class="fas fa-search text-orange-500 mt-1 mr-2"></i><span><strong>Approfondissez :</strong> Étudiez les cas pratiques de jurisprudence</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-file-contract text-orange-500 mt-1 mr-2"></i><span><strong>Documentation :</strong> Consultez les normes NFC 15-500 et NF EN 13501-1</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-chart-line text-orange-500 mt-1 mr-2"></i><span><strong>Entraînement :</strong> Refaites le quiz avec le niveau Expert</span></li>'
+                );
+            } else {
+                advices.push(
+                    '<li class="flex items-start"><i class="fas fa-crown text-emerald-500 mt-1 mr-2"></i><span><strong>Excellente maîtrise :</strong> Pensez à la formation continue</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-chart-line text-emerald-500 mt-1 mr-2"></i><span><strong>Veille réglementaire :</strong> Suivez les évolutions jurisprudentielles</span></li>',
+                    '<li class="flex items-start"><i class="fas fa-share-alt text-emerald-500 mt-1 mr-2"></i><span><strong>Partage :</strong> Formez vos collègues aux bonnes pratiques CTS</span></li>'
+                );
+            }
+            
+            advices.forEach(advice => {
+                adviceList.innerHTML += advice;
+            });
+        }
+
+        function downloadCertificate() {
+            const name = document.getElementById('certificateName').textContent;
+            if (name === '[VOTRE NOM]' || name.trim() === '') {
+                alert("Veuillez entrer votre nom dans le certificat avant de le télécharger.");
+                document.getElementById('certificateName').focus();
+                return;
+            }
+            
+            alert(`Certificat généré pour ${name}. Dans une version complète, un PDF téléchargeable serait généré.`);
+        }
+
+        function restartQuiz() {
+            quizState.questions = [];
+            quizState.currentQuestionIndex = 0;
+            quizState.score = 0;
+            quizState.answers = [];
+            quizState.startTime = null;
+            clearInterval(quizState.timerInterval);
+            quizState.totalSeconds = 0;
+            
+            // Réinitialiser le timer
+            document.getElementById('globalTimer').textContent = '00:00';
+            
+            switchTab('config');
+            document.getElementById('resultsContainer').classList.add('hidden');
+            document.getElementById('noResultsMessage').style.display = 'block';
+        }
+
+        // --- INITIALISATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Page chargée, initialisation...");
+            
+            // Initialiser la configuration
+            initConfiguration();
+            
+            // Initialiser la date du certificat
+            const now = new Date();
+            document.getElementById('certificateDate').textContent = 
+                `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            
+            // Préparer le champ nom du certificat
+            const certificateName = document.getElementById('certificateName');
+            certificateName.addEventListener('click', function() {
+                if (this.textContent === '[VOTRE NOM]') {
+                    this.textContent = '';
+                }
+            });
+            
+            certificateName.addEventListener('blur', function() {
+                if (this.textContent.trim() === '') {
+                    this.textContent = '[VOTRE NOM]';
+                }
+            });
+            
+            // Charger le contenu pédagogique initial
+            loadCaseStudies();
+            
+            console.log("Initialisation terminée");
+        });
+
+    </script>
 </body>
 </html>
